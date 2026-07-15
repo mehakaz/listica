@@ -1,14 +1,334 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/Listica_Logo.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Listica - List it & Get it Done. Smart lists pinned to your calendar." />
-    <title>Listica</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Listica – List it & Get it Done</title>
+  <link rel="icon" href="https://raw.githubusercontent.com/mehakaz/listica/main/Listica_Logo.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#0a0a0f;font-family:'DM Sans',sans-serif;color:#e8e8f0;min-height:100vh}
+    ::-webkit-scrollbar{width:4px}
+    ::-webkit-scrollbar-thumb{background:#2a2a3a;border-radius:2px}
+    input[type=date]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.5;cursor:pointer}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    .fade{animation:fadeUp .35s ease}
+    header{position:sticky;top:0;z-index:50;background:rgba(10,10,15,.9);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.05);padding:0 20px}
+    .hinner{max-width:480px;margin:0 auto;height:60px;display:flex;align-items:center;justify-content:space-between}
+    .logo{height:38px;object-fit:contain}
+    .back-btn{background:none;border:none;color:#888;font-size:20px;cursor:pointer;padding:4px 10px;border-radius:8px}
+    .back-btn:hover{background:rgba(255,255,255,.06)}
+    .cnt-badge{font-size:12px;color:#555;background:#1a1a28;padding:3px 10px;border-radius:20px;font-weight:500}
+    main{max-width:480px;margin:0 auto;padding:24px 20px 80px}
+    h1{font-family:'Nunito',sans-serif;font-size:40px;font-weight:900;line-height:1.1;letter-spacing:-1px;color:#f0f0fa;margin-bottom:10px}
+    .sub{font-size:15px;color:#666;line-height:1.5;margin-bottom:32px}
+    .sec-label{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#444;margin-bottom:14px}
+    .type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:0}
+    .type-card{background:#111118;border:1px solid;border-radius:16px;padding:16px 12px;display:flex;flex-direction:column;align-items:flex-start;gap:4px;cursor:pointer;position:relative;overflow:hidden;transition:transform .2s;text-align:left}
+    .type-card:hover{transform:scale(1.03)}
+    .type-icon{font-size:22px;margin-bottom:2px}
+    .type-name{font-size:13px;font-weight:700;color:#e0e0f0}
+    .type-desc{font-size:10px;color:#555;line-height:1.3}
+    .type-dot{position:absolute;top:10px;right:10px;width:6px;height:6px;border-radius:50%}
+    .list-stack{display:flex;flex-direction:column;gap:10px}
+    .list-card{background:#111118;border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:transform .2s,border-color .2s}
+    .list-card:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.12)}
+    .lc-left{display:flex;align-items:center;gap:14px}
+    .lc-icon{font-size:24px}
+    .lc-name{font-size:15px;font-weight:700;color:#e8e8f0}
+    .lc-meta{font-size:12px;color:#555;margin-top:2px}
+    .ring-wrap{position:relative;width:38px;height:38px;flex-shrink:0}
+    .ring-pct{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:8px;font-weight:800}
+    .tagline{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:48px;opacity:.3}
+    .tagline span{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#888;font-weight:600}
+    .create-header{display:flex;align-items:flex-start;gap:16px;background:#111118;border:1px solid;border-radius:20px;padding:20px;margin-bottom:16px}
+    .create-type-tag{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#555;margin-bottom:6px}
+    .name-input{background:none;border:none;outline:none;color:#f0f0fa;font-family:'Nunito',sans-serif;font-size:20px;font-weight:800;width:100%}
+    .date-row{display:flex;align-items:center;justify-content:space-between;background:#111118;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px 18px;margin-bottom:20px}
+    .date-label{font-size:14px;color:#bbb;font-weight:500}
+    .date-input{background:#1a1a28;border:1px solid rgba(255,255,255,.08);border-radius:10px;color:#e8e8f0;padding:7px 12px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none}
+    .add-row{display:flex;gap:8px;margin-bottom:12px}
+    .add-input{flex:1;background:#111118;border:1px solid rgba(255,255,255,.08);border-radius:12px;color:#e8e8f0;padding:12px 16px;font-size:14px;font-family:'DM Sans',sans-serif;outline:none}
+    .add-btn{border:none;border-radius:12px;width:46px;height:46px;font-size:22px;font-weight:300;color:#0a0a0f;cursor:pointer;transition:opacity .2s,transform .2s;flex-shrink:0}
+    .add-btn:hover{opacity:.85;transform:translateY(-1px)}
+    .item-list{display:flex;flex-direction:column;gap:4px}
+    .item-row{display:flex;align-items:center;gap:12px;padding:10px 14px;background:#111118;border-radius:10px;border:1px solid rgba(255,255,255,.04)}
+    .item-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+    .item-text{flex:1;font-size:14px;color:#ccc}
+    .remove-btn{background:none;border:none;color:#555;font-size:18px;cursor:pointer;opacity:0;transition:opacity .2s;line-height:1;padding:0}
+    .item-row:hover .remove-btn{opacity:1}
+    .save-btn{width:100%;border:none;border-radius:14px;padding:16px;font-size:15px;font-weight:800;color:#0a0a0f;cursor:pointer;font-family:'Nunito',sans-serif;letter-spacing:.02em;transition:opacity .2s,transform .2s}
+    .save-btn:hover{opacity:.88;transform:translateY(-1px)}
+    .detail-header{display:flex;align-items:center;gap:16px;background:#111118;border:1px solid;border-radius:20px;padding:20px;margin-bottom:16px}
+    .detail-name{font-family:'Nunito',sans-serif;font-size:22px;font-weight:900;color:#f0f0fa}
+    .detail-date{font-size:13px;margin-top:3px;font-weight:600}
+    .done-count{font-family:'Nunito',sans-serif;font-size:22px;font-weight:900}
+    .cal-banner{display:flex;align-items:center;justify-content:space-between;background:#111118;border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:14px 18px;margin-bottom:20px}
+    .cal-title{font-size:14px;font-weight:700;color:#e0e0f0}
+    .cal-sub{font-size:12px;color:#555;margin-top:2px}
+    .cal-btn{border:none;border-radius:10px;padding:9px 16px;font-size:13px;font-weight:800;color:#0a0a0f;cursor:pointer;font-family:'Nunito',sans-serif;transition:opacity .2s;white-space:nowrap}
+    .cal-btn:hover{opacity:.85}
+    .check-list{display:flex;flex-direction:column;gap:4px;margin-bottom:32px}
+    .check-row{display:flex;align-items:center;gap:14px;padding:13px 16px;background:#111118;border-radius:12px;border:1px solid rgba(255,255,255,.04);cursor:pointer;transition:background .15s}
+    .check-row:hover{background:rgba(255,255,255,.03)}
+    .check-box{width:20px;height:20px;border-radius:6px;border:2px solid;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .2s}
+    .check-mark{color:#0a0a0f;font-size:11px;font-weight:900}
+    .check-text{font-size:14px;color:#ccc;transition:all .2s}
+    .del-btn{display:block;width:100%;background:none;border:1px solid rgba(255,100,100,.15);border-radius:14px;padding:13px;color:rgba(255,107,107,.33);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;text-align:center}
+    .del-btn:hover{border-color:rgba(255,100,100,.3);color:rgba(255,107,107,.6)}
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(8px);z-index:100;display:flex;align-items:flex-end;justify-content:center;padding:0 0 20px;animation:fadeIn .2s ease}
+    .modal{background:#14141e;border:1px solid rgba(255,255,255,.08);border-radius:24px;padding:24px 24px 20px;width:100%;max-width:480px;margin:0 20px;animation:fadeUp .25s ease}
+    .modal-logo{display:flex;justify-content:center;margin-bottom:16px}
+    .modal-title{font-family:'Nunito',sans-serif;font-size:20px;font-weight:900;color:#f0f0fa;margin-bottom:6px;text-align:center}
+    .modal-sub{font-size:13px;color:#555;margin-bottom:20px;line-height:1.4;text-align:center}
+    .cal-opt{display:flex;align-items:center;gap:14px;padding:14px 16px;background:#1a1a28;border-radius:14px;margin-bottom:10px;text-decoration:none;border:1px solid rgba(255,255,255,.06);transition:all .2s;cursor:pointer}
+    .cal-opt:hover{background:rgba(255,255,255,.06);transform:scale(1.01)}
+    .cal-opt-name{font-size:14px;font-weight:700;color:#e0e0f0}
+    .cal-opt-sub{font-size:11px;color:#555;margin-top:2px}
+    .cal-opt-arrow{margin-left:auto;color:#444;font-size:16px}
+    .modal-cancel{display:block;width:100%;margin-top:8px;background:none;border:none;color:#444;font-size:14px;cursor:pointer;padding:12px;border-radius:12px;font-family:'DM Sans',sans-serif;transition:background .2s;text-align:center}
+    .modal-cancel:hover{background:rgba(255,255,255,.04)}
+    .hidden{display:none}
+    input:focus{outline:none}
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="hinner">
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="back-btn hidden" id="backBtn" onclick="goHome()">←</button>
+      <img class="logo" src="https://raw.githubusercontent.com/mehakaz/listica/main/Listica_Logo.png" alt="Listica"/>
+    </div>
+    <div class="cnt-badge hidden" id="cntBadge"></div>
+  </div>
+</header>
+
+<main id="app"></main>
+
+<!-- CALENDAR MODAL -->
+<div class="modal-overlay hidden" id="calModal" onclick="closeCalModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-logo">
+      <img src="https://raw.githubusercontent.com/mehakaz/listica/main/Listica_Logo.png" alt="Listica" style="height:36px"/>
+    </div>
+    <div class="modal-title">Add to your calendar</div>
+    <div class="modal-sub" id="modalSub"></div>
+    <a class="cal-opt" id="gCalLink" href="#" target="_blank" rel="noopener noreferrer" onclick="closeCalModal()">
+      <svg width="22" height="22" viewBox="0 0 24 24"><rect width="24" height="24" rx="4" fill="#4285F4"/><rect x="3" y="3" width="7" height="7" rx="1" fill="white"/><rect x="14" y="3" width="7" height="7" rx="1" fill="#EA4335"/><rect x="3" y="14" width="7" height="7" rx="1" fill="#34A853"/><rect x="14" y="14" width="7" height="7" rx="1" fill="#FBBC05"/></svg>
+      <div><div class="cal-opt-name">Google Calendar</div><div class="cal-opt-sub">Opens in browser</div></div>
+      <span class="cal-opt-arrow">→</span>
+    </a>
+    <a class="cal-opt" id="icsLink" href="#" download onclick="closeCalModal()">
+      <svg width="22" height="22" viewBox="0 0 24 24"><rect width="24" height="24" rx="4" fill="#1C7CF9"/><rect x="3" y="5" width="18" height="16" rx="2" fill="white"/><rect x="3" y="5" width="18" height="5" rx="2" fill="#1C7CF9"/><rect x="7" y="3" width="2" height="4" rx="1" fill="#1C7CF9"/><rect x="15" y="3" width="2" height="4" rx="1" fill="#1C7CF9"/><circle cx="8" cy="15" r="1.5" fill="#1C7CF9"/><circle cx="12" cy="15" r="1.5" fill="#1C7CF9"/><circle cx="16" cy="15" r="1.5" fill="#1C7CF9"/></svg>
+      <div><div class="cal-opt-name">Apple Calendar</div><div class="cal-opt-sub">Downloads .ics file</div></div>
+      <span class="cal-opt-arrow">→</span>
+    </a>
+    <button class="modal-cancel" onclick="closeCalModal()">Cancel</button>
+  </div>
+</div>
+
+<script>
+const TYPES = [
+  {id:"grocery",label:"Grocery",icon:"🛒",color:"#4ade80",desc:"Shopping & ingredients"},
+  {id:"trip",label:"Trip",icon:"✈️",color:"#60a5fa",desc:"Travel packing & plans"},
+  {id:"work",label:"Work",icon:"💼",color:"#f59e0b",desc:"Tasks & meetings"},
+  {id:"event",label:"Event",icon:"🎉",color:"#e879f9",desc:"Party & gathering prep"},
+  {id:"health",label:"Health",icon:"💊",color:"#f87171",desc:"Meds, appointments"},
+  {id:"custom",label:"Custom",icon:"✏️",color:"#94a3b8",desc:"Anything else"},
+];
+const SAMPLES = {
+  grocery:["Milk","Eggs","Bread","Butter","Apples"],
+  trip:["Passport","Charger","Toothbrush","Clothes (3 days)","Camera"],
+  work:["Review slides","Send report","Team standup","Reply to emails"],
+  event:["Decorations","Cake","Invitations","Music playlist","Ice"],
+  health:["Vitamin D","Book checkup","Refill prescription"],
+  custom:[],
+};
+
+let lists = [{id:"demo1",type:"grocery",name:"Weekly Groceries",date:today(),
+  items:[{id:1,text:"Milk",done:true},{id:2,text:"Eggs",done:false},{id:3,text:"Bread",done:false}]}];
+let view = "home";
+let creating = {};
+let activeId = null;
+
+function today(){return new Date().toISOString().slice(0,10)}
+function getType(id){return TYPES.find(t=>t.id===id)||TYPES[5]}
+function fmtDate(d){if(!d)return"";const dt=new Date(d);return dt.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"})}
+function uid(){return Date.now().toString()}
+
+function render(){
+  const app=document.getElementById("app");
+  const back=document.getElementById("backBtn");
+  const badge=document.getElementById("cntBadge");
+  back.classList.toggle("hidden",view==="home");
+  if(view==="home"&&lists.length>0){
+    badge.classList.remove("hidden");
+    badge.textContent=lists.length+" list"+(lists.length!==1?"s":"");
+  } else {badge.classList.add("hidden")}
+
+  if(view==="home") app.innerHTML=renderHome();
+  else if(view==="create") app.innerHTML=renderCreate();
+  else if(view==="detail") app.innerHTML=renderDetail();
+}
+
+function renderHome(){
+  const cards=TYPES.map(t=>`
+    <button class="type-card" style="border-color:${t.color}44" onclick="startCreate('${t.id}')">
+      <span class="type-icon">${t.icon}</span>
+      <span class="type-name">${t.label}</span>
+      <span class="type-desc">${t.desc}</span>
+      <span class="type-dot" style="background:${t.color}"></span>
+    </button>`).join("");
+
+  const myLists=lists.length===0?"":` 
+    <p class="sec-label" style="margin-top:40px">Your lists</p>
+    <div class="list-stack">${lists.map(l=>{
+      const t=getType(l.type);
+      const done=l.items.filter(i=>i.done).length;
+      const pct=l.items.length>0?(done/l.items.length)*100:0;
+      const dash=(pct/100)*94;
+      return`<div class="list-card" onclick="openDetail('${l.id}')">
+        <div class="lc-left">
+          <span class="lc-icon">${t.icon}</span>
+          <div>
+            <div class="lc-name">${l.name}</div>
+            <div class="lc-meta">${l.items.length} items${l.date?` · <span style="color:${t.color}">${fmtDate(l.date)}</span>`:""}</div>
+          </div>
+        </div>
+        <div class="ring-wrap">
+          <svg width="38" height="38" viewBox="0 0 38 38">
+            <circle cx="19" cy="19" r="15" fill="none" stroke="#1e1e2e" stroke-width="3"/>
+            <circle cx="19" cy="19" r="15" fill="none" stroke="${t.color}" stroke-width="3"
+              stroke-dasharray="${dash} 94" stroke-linecap="round" transform="rotate(-90 19 19)"/>
+          </svg>
+          <span class="ring-pct" style="color:${t.color}">${Math.round(pct)}%</span>
+        </div>
+      </div>`;}).join("")}</div>`;
+
+  return`<div class="fade">
+    <h1>Your lists,<br>your day.</h1>
+    <p class="sub">Create smart lists and pin them to your calendar.</p>
+    <p class="sec-label">Start a new list</p>
+    <div class="type-grid">${cards}</div>
+    ${myLists}
+    <div class="tagline"><span style="color:#4ade80">—</span><span>List it & Get it Done</span><span style="color:#4ade80">—</span></div>
+  </div>`;
+}
+
+function renderCreate(){
+  const t=getType(creating.type);
+  const items=creating.items.map(i=>`
+    <div class="item-row">
+      <span class="item-dot" style="background:${t.color}"></span>
+      <span class="item-text">${i.text}</span>
+      <button class="remove-btn" onclick="removeItem(${i.id})">×</button>
+    </div>`).join("");
+  return`<div class="fade">
+    <div class="create-header" style="border-color:${t.color}55">
+      <span style="font-size:36px">${t.icon}</span>
+      <div style="flex:1">
+        <div class="create-type-tag">${t.label} list</div>
+        <input class="name-input" id="listName" value="${creating.name}" placeholder="List name..." maxlength="40" oninput="creating.name=this.value"/>
+      </div>
+    </div>
+    <div class="date-row">
+      <span class="date-label">📅 Assign to a day</span>
+      <input type="date" class="date-input" value="${creating.date}" oninput="creating.date=this.value"/>
+    </div>
+    <div style="margin-bottom:24px">
+      <p class="sec-label">Items <span style="background:#1a1a28;padding:1px 7px;border-radius:20px;font-size:10px;color:#666">${creating.items.length}</span></p>
+      <div class="add-row">
+        <input class="add-input" id="newItemInput" placeholder="Add an item..." onkeydown="if(event.key==='Enter')addItem()"/>
+        <button class="add-btn" style="background:${t.color}" onclick="addItem()">+</button>
+      </div>
+      <div class="item-list">${items}</div>
+    </div>
+    <button class="save-btn" style="background:${t.color}" onclick="saveList()">Save List →</button>
+  </div>`;
+}
+
+function renderDetail(){
+  const list=lists.find(l=>l.id===activeId);
+  if(!list)return"";
+  const t=getType(list.type);
+  const done=list.items.filter(i=>i.done).length;
+  const items=list.items.map(i=>`
+    <div class="check-row" onclick="toggleItem('${list.id}',${i.id})" style="opacity:${i.done?.4:1}">
+      <div class="check-box" style="border-color:${t.color};background:${i.done?t.color:"transparent"}">
+        ${i.done?`<span class="check-mark">✓</span>`:""}
+      </div>
+      <span class="check-text" style="text-decoration:${i.done?"line-through":"none"}">${i.text}</span>
+    </div>`).join("");
+  return`<div class="fade">
+    <div class="detail-header" style="border-color:${t.color}44">
+      <span style="font-size:40px">${t.icon}</span>
+      <div style="flex:1">
+        <div class="detail-name">${list.name}</div>
+        ${list.date?`<div class="detail-date" style="color:${t.color}">${fmtDate(list.date)}</div>`:""}
+      </div>
+      <div class="done-count"><span style="color:${t.color};font-weight:800">${done}</span><span style="color:#444">/${list.items.length}</span></div>
+    </div>
+    <div class="cal-banner">
+      <div>
+        <div class="cal-title">📅 Add to Calendar</div>
+        <div class="cal-sub">Pin this list to ${list.date?fmtDate(list.date):"a day"}</div>
+      </div>
+      <button class="cal-btn" style="background:${t.color}" onclick="openCalModal('${list.id}')">+ Add</button>
+    </div>
+    <div class="check-list">${items}</div>
+    <button class="del-btn" onclick="deleteList('${list.id}')">Delete list</button>
+  </div>`;
+}
+
+function goHome(){view="home";render()}
+function startCreate(typeId){
+  const t=getType(typeId);
+  creating={type:typeId,name:typeId==="custom"?"":"My "+t.label+" List",date:today(),
+    items:(SAMPLES[typeId]||[]).map((s,i)=>({id:i+1,text:s,done:false}))};
+  view="create";render();
+}
+function addItem(){
+  const inp=document.getElementById("newItemInput");
+  if(!inp||!inp.value.trim())return;
+  creating.items.push({id:Date.now(),text:inp.value.trim(),done:false});
+  render();
+  setTimeout(()=>{const i=document.getElementById("newItemInput");if(i)i.focus();},0);
+}
+function removeItem(id){creating.items=creating.items.filter(i=>i.id!==id);render()}
+function saveList(){
+  const list={id:uid(),type:creating.type,name:creating.name||(getType(creating.type).label+" List"),
+    date:creating.date,items:creating.items};
+  lists.unshift(list);activeId=list.id;view="detail";render();
+}
+function openDetail(id){activeId=id;view="detail";render()}
+function toggleItem(listId,itemId){
+  const list=lists.find(l=>l.id===listId);
+  if(!list)return;
+  list.items=list.items.map(i=>i.id===itemId?{...i,done:!i.done}:i);
+  render();
+}
+function deleteList(id){lists=lists.filter(l=>l.id!==id);view="home";render()}
+
+function openCalModal(listId){
+  const list=lists.find(l=>l.id===listId);if(!list)return;
+  const date=(list.date||today()).replace(/-/g,"");
+  const title=encodeURIComponent("📋 "+list.name);
+  const details=encodeURIComponent(list.items.map((i,n)=>`${n+1}. ${i.text}`).join("\n"));
+  const desc=encodeURIComponent(list.items.map((i,n)=>`${n+1}. ${i.text}`).join("\\n"));
+  document.getElementById("modalSub").textContent=`"${list.name}" will be pinned as an event with all your items.`;
+  document.getElementById("gCalLink").href=`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&dates=${date}/${date}`;
+  const ics=`data:text/calendar;charset=utf8,BEGIN:VCALENDAR%0AVERSION:2.0%0ABEGIN:VEVENT%0ASUMMARY:${title}%0ADTSTART:${date}%0ADTEND:${date}%0ADESCRIPTION:${desc}%0AEND:VEVENT%0AEND:VCALENDAR`;
+  const icsEl=document.getElementById("icsLink");
+  icsEl.href=ics;icsEl.download=list.name.replace(/\s+/g,"_")+".ics";
+  document.getElementById("calModal").classList.remove("hidden");
+}
+function closeCalModal(){document.getElementById("calModal").classList.add("hidden")}
+
+render();
+</script>
+</body>
 </html>
+
